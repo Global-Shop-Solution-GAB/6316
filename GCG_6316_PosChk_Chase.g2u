@@ -1,0 +1,738 @@
+Program.Sub.ScreenSU.Start
+Gui.Form..create
+Gui.Form..caption("Positive Pay - Chase Bank")
+Gui.Form..size(13470,10710)
+Gui.Form..position(0,0)
+Gui.Form..event(UnLoad,Form_UnLoad)
+Gui.Form..forecolor(0)
+Gui.Form..BackColor(-2147483633)
+Gui.Form..mousepointer(0)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form.dpDate.create(datepicker)
+Gui.Form.dpDate.size(1935,285)
+Gui.Form.dpDate.position(75,420)
+Gui.Form.dpDate.defaultvalue("")
+Gui.Form.cmdOK.create(button)
+Gui.Form.cmdOK.caption("OK")
+Gui.Form.cmdOK.size(855,375)
+Gui.Form.cmdOK.position(60,1455)
+Gui.Form.cmdOK.event(Click,cmdOK_Click)
+Gui.Form.cmdOK.defaultvalue("")
+Gui.Form.lbl1.Create(Label,"Select Date",True,1035,255,0,60,180,True,0,"Arial",8,-2147483633,0)
+Gui.Form.txtExportFolder.Create(TextBox,"S:\Accounts Payable\Positive Pay Files",True,5580,300,0,75,1065,True,0,"Arial",8,-2147483643,1)
+Gui.Form.lbl2.Create(Label,"Export Folder",True,1215,255,0,60,855,True,0,"Arial",8,-2147483633,0)
+Gui.Form.cmdBrowseExportFolder.Create(Button)
+Gui.Form.cmdBrowseExportFolder.Size(570,375)
+Gui.Form.cmdBrowseExportFolder.Position(5745,1020)
+Gui.Form.cmdBrowseExportFolder.Caption("^")
+Gui.Form.cmdBrowseExportFolder.Event(Click,cmdBrowseExportFolder_Click)
+Gui.Form.lbl3.Create(Label,"Courrier Code",True,1155,255,0,4155,180,True,0,"Arial",8,-2147483633,0)
+Gui.Form.txtCourcode.Create(TextBox,"USPS",True,1005,300,0,4170,405,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txtCourcode.MaxLength(8)
+Gui.Form.txtBankAccount.Create(TextBox,"699760556",True,1830,300,0,2190,405,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txtBankAccount.DefaultValue("")
+Gui.Form.txtBankAccount.MaxLength(17)
+Gui.Form.lbl4.Create(Label,"Bank Account",True,1275,255,0,2190,180,True,0,"Arial",8,-2147483633,0)
+Gui.Form.gsCustom.Create(GsGridControl)
+Gui.Form.gsCustom.Size(13185,7815)
+Gui.Form.gsCustom.Position(75,1905)
+Gui.Form.cmdRun.Create(Button)
+Gui.Form.cmdRun.Enabled(False)
+Gui.Form.cmdRun.Size(855,375)
+Gui.Form.cmdRun.Position(45,9795)
+Gui.Form.cmdRun.Caption("Run")
+Gui.Form.cmdRun.DefaultValue("")
+Gui.Form.cmdRun.Event(Click,cmdRun_Click)
+Gui.Form.txtCheckTemplate.Create(TextBox,"SIGBN",True,1155,300,0,5325,405,True,0,"Arial",8,-2147483643,1)
+Gui.Form.lbl5.Create(Label,"Check Template",True,1305,255,0,5310,180,True,0,"Arial",8,-2147483633,0)
+Gui.Form.chkVerifyEqual.Create(CheckBox)
+Gui.Form.chkVerifyEqual.Size(2190,360)
+Gui.Form.chkVerifyEqual.Position(6585,1035)
+Gui.Form.chkVerifyEqual.Caption("Verify Equal Net Amt")
+Gui.Form.chkVerifyEqual.Value(1)
+Gui.Form.optCheckPrint.Create(Option)
+Gui.Form.optCheckPrint.Size(1935,255)
+Gui.Form.optCheckPrint.Position(8865,1050)
+Gui.Form.optCheckPrint.Caption("Check Print Layout")
+Gui.Form.optPostPay.Create(Option)
+Gui.Form.optPostPay.Size(2100,255)
+Gui.Form.optPostPay.Position(10830,1050)
+Gui.Form.optPostPay.Caption("Positive Pay Layout")
+Gui.Form.dtpDateSubmit.Create(DatePicker)
+Gui.Form.dtpDateSubmit.Size(1935,285)
+Gui.Form.dtpDateSubmit.Position(6630,420)
+Gui.Form.lbl6.Create(Label,"Date Submit",True,1965,255,0,6615,180,True,0,"Arial",8,-2147483633,0)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'BN, Apr 2021
+'Customer: Chase 
+'This project will generate a csv positive pay and check print for Chase Bank
+'Invoice note is pulled from V_AP_INVC_NOTES that will populate the Description field of the Remittance section
+
+f.Intrinsic.Control.Try
+	v.Local.sError.Declare
+	v.Local.sDefaultfolder.Declare
+	v.Local.bExist.Declare
+
+	F.Odbc.Connection!Conx.OpenCompanyConnection
+	
+	'Default Positive Pay folder that store the csv output file.
+	f.Intrinsic.String.Build("{0}\Custom",v.Caller.GlobalDir,v.Local.sDefaultfolder)
+	f.Intrinsic.File.DirExists(v.Local.sDefaultfolder,v.Local.bExist)
+	f.Intrinsic.Control.If(v.Local.bExist.Not)
+		f.Intrinsic.File.CreateDir(v.Local.sDefaultfolder)
+	f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.String.Build("{0}\Custom\6316",v.Caller.GlobalDir,v.Local.sDefaultfolder)
+	f.Intrinsic.File.DirExists(v.Local.sDefaultfolder,v.Local.bExist)
+	f.Intrinsic.Control.If(v.Local.bExist.Not)
+		f.Intrinsic.File.CreateDir(v.Local.sDefaultfolder)
+	f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.String.Build("{0}\Custom\6316\{1}",v.Caller.GlobalDir,v.Caller.CompanyCode,v.Local.sDefaultfolder)
+	f.Intrinsic.File.DirExists(v.Local.sDefaultfolder,v.Local.bExist)
+	f.Intrinsic.Control.If(v.Local.bExist.Not)
+		f.Intrinsic.File.CreateDir(v.Local.sDefaultfolder)
+	f.Intrinsic.Control.EndIf
+	
+	'gui.Form.txtExportFolder.Text(v.Local.sDefaultfolder)
+	gui.Form.gsCustom.Anchor(15)
+	gui.Form.cmdRun.Anchor(6)
+	gui.Form.optCheckPrint.Value(1)
+	gui.Form..Show
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: GCG_6318_PosChk_Chase.g2u{0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	f.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.cmdOK_Click.Start
+'Verify if there are checks for the selected date. If yes, show the grid for the user to overwrite the courrier code
+f.Intrinsic.Control.Try	
+	V.Local.sError.Declare
+	v.Local.sSQL.Declare
+	v.Local.bExist.Declare
+	V.Local.sDateSelected.Declare
+	v.Local.iCnt.Declare
+	v.Local.sHold.Declare	
+	v.Local.iInner.Declare
+	
+	'Check Export Folder
+	f.Intrinsic.File.DirExists(v.Screen.Form!txtExportFolder.Text.Trim,v.Local.bExist)
+	f.Intrinsic.Control.If(v.Local.bExist.Not)
+		f.Intrinsic.UI.Msgbox("Export Folder does not exist")
+		f.Intrinsic.Control.ExitSub
+	f.Intrinsic.Control.EndIf	
+	
+	f.Intrinsic.UI.InvokeWaitDialog("Processing...")
+	'gui.Form..Visible(false)
+	
+	'format date
+	F.Intrinsic.String.Format(V.Screen.Form!dpDate.Value,"YYYY-MM-DD",V.Local.sDateSelected)	
+	
+	'select data for correct date and account number
+	F.intrinsic.string.Build("select Ck_Date, ltrim(rtrim(Ck_no)) as CK_No,Payee, Amount, Vend_No from V_CHECKS_LOG where CK_DATE= '{0}' and Ck_Or_Void = 'C' and Ck_No not like 'A%' order by CK_NO",v.Local.sDateSelected,V.Local.sSQL)
+	f.Intrinsic.Control.If(v.DataTable.PreT.Exists)
+		f.Data.DataTable.Close("PreT")
+	f.Intrinsic.Control.EndIf
+	f.Data.DataTable.CreateFromSQL("PreT","conx",v.Local.sSQL,True)	
+	f.Intrinsic.Control.If(v.DataTable.PreT.RowCount,=,0)
+		f.Intrinsic.UI.Msgbox("No checks to export")	
+		f.Intrinsic.UI.CloseWaitDialog
+		'gui.Form..Show
+		f.Intrinsic.Control.ExitSub
+	f.Intrinsic.Control.EndIf
+	
+	f.Data.DataTable.AddColumn("PreT","CourrierCode","String",v.Screen.Form!txtCourcode.Text.Trim)
+	f.Data.DataTable.AddColumn("PreT","Exclude","Boolean",False)
+	
+	f.Intrinsic.UI.CloseWaitDialog
+	f.Data.DataView.Create("PreT","PreTDV")
+	'Add grid view
+	
+	Gui.Form.gsCustom.AddGridviewFromDataview("GVMain","PreT","PreTDV")
+
+	'General format
+	Gui.Form.gsCustom.SetGridViewProperty("GVMain","AllowSort",True)
+	Gui.Form.gsCustom.SetGridViewProperty("GVMain","AllowFilter",True)
+	Gui.Form.gsCustom.SetGridViewProperty("GVMain","OptionsFindAlwaysVisible",True)
+	Gui.Form.gsCustom.SetGridViewProperty("GVMain","OptionsViewShowAutoFilterRow",True)
+	Gui.Form.gsCustom.SetGridViewProperty("GVMain","OptionsDetailShowDetailTabs",True)
+	Gui.Form.gsCustom.SetGridViewProperty("GVMain","OptionsViewShowGroupPanel",True)
+	
+	'Column format	
+	gui.Form.gsCustom.SetColumnProperty("GVMain","CourrierCode","AllowEdit",True)
+	gui.Form.gsCustom.SetColumnProperty("GVMain","CourrierCode","ReadOnly",False)
+	gui.Form.gsCustom.SetColumnProperty("GVMain","CourrierCode","Visible",False)
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Exclude","AllowEdit",True)
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Exclude","ReadOnly",False)
+	'Width
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Vend_No","Width","40")
+	gui.Form.gsCustom.SetColumnProperty("GVMain","CourrierCode","Width","65")
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Exclude","Width","50")
+	gui.Form.gsCustom.SetColumnProperty("GVMain","CK_Date","Width","65")
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Amount","Width","55")
+	'Header
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Exclude","HeaderHAlignment","Center")
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Amount","HeaderHAlignment","far")
+	'Header Font Bold
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Ck_Date","HeaderFontBold",True)
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Ck_No","HeaderFontBold",True)
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Amount","HeaderFontBold",True)
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Vend_No","HeaderFontBold",True)
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Exclude","HeaderFontBold",True)
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Payee","HeaderFontBold",True)
+	'Caption
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Vend_No","Caption","Vendor")
+	gui.Form.gsCustom.SetColumnProperty("GVMain","CourrierCode","Caption","Courrier Code")
+	gui.Form.gsCustom.SetColumnProperty("GVMain","CK_Date","Caption","Check Date")
+	gui.Form.gsCustom.SetColumnProperty("GVMain","CK_No","Caption","Check Number")
+	
+	'Numeric
+	gui.Form.gsCustom.SetColumnProperty("GVMain","Amount","DisplayCustomNumeric","###,###,###,##0.00")
+	
+	'Custom date
+	Gui.Form.gsCustom.SetColumnProperty("GVMain","CK_Date","DisplayCustomDatetime","d")
+	
+	'Add sub table
+	F.Data.Datatable.AddTable("PreT","AP")
+	f.Data.DataTable.AddColumn("PreT$AP","Check_Num","String")
+	f.Data.DataTable.AddColumn("PreT$AP","Invoice","String")
+	f.Data.DataTable.AddColumn("PreT$AP","Batch_Num","String")
+	f.Data.DataTable.AddColumn("PreT$AP","Batch_Line","String")
+	f.Data.DataTable.AddColumn("PreT$AP","Date_Batch","Date")
+	f.Data.DataTable.AddColumn("PreT$AP","Date_Invoice","Date")
+	f.Data.DataTable.AddColumn("PreT$AP","Amt_Invoice","float")
+	f.Data.DataTable.AddColumn("PreT$AP","Amt_Transaction","float")
+	f.Data.DataTable.AddColumn("PreT$AP","Discount_Invoice","float")
+	f.Data.DataTable.AddExpressionColumn("PreT$AP","Amt_Net","float","[Amt_Transaction] - [Discount_Invoice]")
+	f.Data.DataTable.AddColumn("PreT$AP","Purchase_Order","String")
+	
+	'Create Child Dataview	
+	F.Data.DataView.Create("PreT$AP","APdv")	
+	F.Data.DataTable.AddRelation("PreT","Ck_No","PreT$AP","Check_Num","Invoice Details")
+	Gui.Form.gsCustom.AddGridviewFromDataview("gvAP","PreT","APdv")	
+	
+	'Custom date
+	Gui.Form.gsCustom.SetColumnProperty("gvAP","Date_Batch","DisplayCustomDatetime","d")
+	Gui.Form.gsCustom.SetColumnProperty("gvAP","Date_Invoice","DisplayCustomDatetime","d")
+	Gui.Form.gsCustom.SetColumnProperty("gvAP","Amt_Invoice","DisplayCustomNumeric","###,###,###,##0.00")
+	Gui.Form.gsCustom.SetColumnProperty("gvAP","Amt_Transaction","DisplayCustomNumeric","###,###,###,##0.00")
+	Gui.Form.gsCustom.SetColumnProperty("gvAP","Discount_Invoice","DisplayCustomNumeric","###,###,###,##0.00")
+	Gui.Form.gsCustom.SetColumnProperty("gvAP","Amt_Net","DisplayCustomNumeric","###,###,###,##0.00")	
+	Gui.Form.gsCustom.SetColumnProperty("gvAP","Amt_Invoice","HeaderHAlignment","far")
+	Gui.Form.gsCustom.SetColumnProperty("gvAP","Amt_Transaction","HeaderHAlignment","far")
+	Gui.Form.gsCustom.SetColumnProperty("gvAP","Discount_Invoice","HeaderHAlignment","far")
+	Gui.Form.gsCustom.SetColumnProperty("gvAP","Amt_Net","HeaderHAlignment","far")
+	'Invisible
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Check_Num","Visible",False)
+	'Caption
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Batch_Num","Caption","Batch")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Batch_Line","Caption","Line")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Date_Batch","Caption","Batch Date")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Date_Invoice","Caption","Invoice Date")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Amt_Invoice","Caption","Amt Invoice")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Amt_Transaction","Caption","Amt Transaction")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Discount_Invoice","Caption","Discount Invoice")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Amt_Net","Caption","Amt Net")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Purchase_Order","Caption","Purchase Order")
+	'Width
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Batch_Num","Width","35")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Batch_Line","Width","35")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Date_Batch","Width","75")
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Date_Invoice","Width","75")
+	
+	'Invisible
+	gui.Form.gsCustom.SetColumnProperty("gvAP","Purchase_Order","Visible",False)
+	
+	gui.Form.gsCustom.AddSummaryItem("gvAP","Amt_Invoice","SumAmt_Invoice","Sum","","","n")	
+	gui.Form.gsCustom.AddSummaryItem("gvAP","Amt_Transaction","SumAmt_Transaction","Sum","","","n")
+	gui.Form.gsCustom.AddSummaryItem("gvAP","Discount_Invoice","SumDiscount_Invoice","Sum","","","n")
+	gui.Form.gsCustom.AddSummaryItem("gvAP","Amt_Net","SumAmt_Net","Sum","","","n")
+	
+	'Populate AP table	
+	f.Intrinsic.Control.For(v.Local.iCnt,0,v.DataTable.PreT.RowCount--,1)
+		f.Intrinsic.String.Format(v.DataTable.PreT(v.Local.iCnt).Ck_Date!FieldValString,"YYYY-MM-DD",v.Local.sHold)
+		f.Intrinsic.String.Build("Select ltrim(rtrim(Check_Num)) as Check_Num,Invoice,Batch_Num,Batch_Line,Date_Batch,Date_Invoice,Amt_Invoice,Amt_Transaction,Discount_Invoice,Purchase_Order from v_ap_Open_Items where Check_Num = '{0}' and Date_Check = '{1}' order by batch_num,Batch_Line",v.DataTable.PreT(v.Local.iCnt).Ck_No!FieldValSTring,v.Local.sHold,v.Local.sSQL)
+		f.Data.DataTable.CreateFromSQL("Temp","conx",v.Local.sSQL,True)
+		f.Intrinsic.Control.For(v.Local.iInner,0,v.DataTable.Temp.RowCount--,1)
+			f.Data.Datatable.AddRow("PreT$AP","Check_Num",v.DataTable.Temp(v.Local.iInner).Check_Num!FieldValString,"Invoice",v.DataTable.Temp(v.Local.iInner).Invoice!FieldValString,"Batch_Num",v.DataTable.Temp(v.Local.iInner).Batch_Num!FieldValString,"Batch_Line",v.DataTable.Temp(v.Local.iInner).Batch_Line!FieldValString,"Date_Batch",v.DataTable.Temp(v.Local.iInner).Date_Batch!FieldValString,"Date_Invoice",v.DataTable.Temp(v.Local.iInner).Date_Invoice!FieldValString,"Amt_Invoice",v.DataTable.Temp(v.Local.iInner).Amt_Invoice!FieldValString,"Amt_Transaction",v.DataTable.Temp(v.Local.iInner).Amt_Transaction!FieldValString,"Discount_Invoice",v.DataTable.Temp(v.Local.iInner).Discount_Invoice!FieldValString,"Purchase_Order",v.DataTable.Temp(v.Local.iInner).Purchase_Order!FieldValString)
+		f.Intrinsic.Control.Next(v.Local.iInner)		
+		f.Data.DataTable.Close("Temp")
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	gui.Form.gsCustom.MainView("GVMain")
+	'gui.Form..Show
+	'Deactivate Controls
+	gui.Form.dpDate.Enabled(False)	
+	gui.Form.txtBankAccount.Enabled(False)
+	gui.Form.txtExportFolder.Enabled(False)
+	gui.Form.cmdBrowseExportFolder.Enabled(False)
+	gui.Form.cmdOK.Enabled(False)
+	'Activate run button
+	gui.Form.cmdRun.Enabled(True)
+
+	f.Intrinsic.Control.ExitSub
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: GCG_6318_PosChk_Chase.g2u{0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	f.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdOK_Click.End
+
+Program.Sub.cmdRun_Click.Start
+f.Intrinsic.Control.Try
+	v.Local.sError.Declare
+	
+	f.Intrinsic.Control.If(v.Screen.Form!optCheckPrint.Value)
+		f.Intrinsic.Control.CallSub(CheckPrintLayout)
+	f.Intrinsic.Control.Else
+		f.Intrinsic.Control.CallSub(PositivePayLayout)
+	f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: GCG_6318_PosChk_Chase.g2u{0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	f.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+
+Program.Sub.cmdRun_Click.End
+
+Program.Sub.Form_UnLoad.Start
+f.Intrinsic.Control.CallSub("Unload")
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.UnLoad.Start
+f.Intrinsic.Control.Try
+	v.Local.sError.Declare
+
+	F.Intrinsic.Control.If(V.ODBC.conx.State,=,1)
+		F.ODBC.Connection!conx.close
+	F.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	f.Intrinsic.String.Build("Subroutine Error {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End	
+F.Intrinsic.Control.EndTry
+Program.Sub.UnLoad.End
+
+Program.Sub.cmdBrowseExportFolder_Click.Start
+'Browse Export Folder
+f.Intrinsic.Control.Try
+	v.Local.sError.Declare
+	v.Local.sPath.Declare
+	
+	F.Intrinsic.UI.FolderBrowser("Select Folder for Path",V.Local.sPath)
+	f.Intrinsic.Control.If(v.Local.sPath.IsCancel,=,False)
+		gui.Form.txtExportFolder.Text(v.Local.sPath)
+	f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	f.Intrinsic.String.Build("Subroutine Error {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End	
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdBrowseExportFolder_Click.End
+
+Program.Sub.CheckPrintLayout.Start
+f.Intrinsic.Control.Try	
+	V.Local.sError.Declare
+	v.Local.sSQL.Declare	
+	V.local.sExport.declare
+	v.Local.sFile.Declare
+	v.Local.sMsg.Declare
+	V.Local.sDateSelected.Declare
+	v.Local.sDateSubmitted.Declare
+	v.Local.sInvoiceDate.Declare
+	V.Local.sAmountCheck.Declare
+	v.Local.sAmountInvoice.Declare
+	v.Local.sAmtNet.Declare	
+	v.Local.sCheckNum.Declare
+	v.Local.sZip.Declare
+	v.Local.sCourrierCode.Declare
+	v.Local.sInvoiceNote.Declare
+	v.Local.iCnt.Declare
+	v.Local.iInvoice.Declare
+	v.Local.iLineNum.Declare
+	v.Local.fTotal.Declare	
+	v.Local.sHold.Declare
+	v.Local.sDateSubmittedWithDash.Declare
+	
+	v.Local.iMonth.Declare
+	v.Local.iDay.Declare
+	v.Local.iYear.Declare
+	v.Local.sDateInvoiceWithDash.Declare
+	v.Local.sPayeeName.Declare
+	v.Local.sPayeeAddress1.Declare
+	v.Local.sCity.Declare
+	v.Local.sTimeSubmitted.Declare	
+	
+	v.Local.bContainsCommas.Declare
+	v.Local.sPipeCharacter.Declare
+	v.Local.sPipeCharacter2.Declare	
+	v.Local.sAmtDiscount.Declare
+	v.Local.bContainsCommas2.Declare
+	
+	'Generate Dictionary (CK_No, courrierCode)
+	f.Data.Dictionary.CreateFromDataTable("CourrierCodeDict","PreT","CK_No","CourrierCode")
+	f.Data.Dictionary.SetDefaultReturn("CourrierCodeDict","")
+	'Generate Dictionary (Invoice,Text)
+	f.Data.Dictionary.CreateFromSQL("InvNoteDict","conx","Select Distinct Invoice,Text from V_AP_INVC_NOTES")
+	f.Data.Dictionary.SetDefaultReturn("InvNoteDict","")
+	'Generate Dictionary (Invoice,Text)
+	f.Data.Dictionary.CreateFromDataTable("ExcludeDict","PreT","CK_No","Exclude")
+	f.Data.Dictionary.SetDefaultReturn("ExcludeDict",False)
+	
+	f.Intrinsic.UI.InvokeWaitDialog("Processing...")
+	gui.Form..Visible(false)
+	
+	'format date
+	F.Intrinsic.String.Format(V.Screen.Form!dpDate.Value,"YYYY-MM-DD",V.Local.sDateSelected)	
+	F.Intrinsic.String.Format(V.Screen.Form!dtpDateSubmit.Value,"MMDDYYYY",V.Local.sDateSubmitted)	
+	f.Intrinsic.String.Mid(v.Local.sDateSubmitted,3,2,v.Local.sHold)
+	v.Local.iMonth.Set(v.Local.sDateSubmitted.left2)
+	v.Local.iDay.Set(v.Local.sHold)
+	v.Local.iYear.Set(v.Local.sDateSubmitted.Right4)
+	f.Intrinsic.String.Build("{0}/{1}/{2}",v.Local.iMonth,v.Local.iDay,v.Local.iYear,v.Local.sDateSubmittedWithDash)
+	f.Intrinsic.String.Build("{0}\{1}_CHKPrint_{2}_Submit_{3}_{4}.csv",v.Screen.Form!txtExportFolder.Text.Trim,v.Caller.CompanyCode,v.Local.sDateSelected,v.Ambient.Date.FormatYYYYMMDD,v.Ambient.Now.FormatHhNnSs,v.Local.sFile)
+	
+	v.Local.sTimeSubmitted.Set(v.Ambient.Now.FormatHhNnSs)
+	
+	'1/File Header record
+	f.Intrinsic.String.Build("FILHDR,PWS,ECOFASTENSOLAR,{0},{1},",V.Local.sDateSubmittedWithDash,v.Local.sTimeSubmitted.Left4,V.Local.sExport)
+	f.Intrinsic.Math.Add(v.Local.iLineNum,1,v.Local.iLineNum)
+		
+	'select data for correct date and account number
+	F.intrinsic.string.Build("select Ck_Date, Ck_No,Ck_Or_Void, Acct_No,v.Name_Vendor_pay as Payee, Amount, Vend_No,ADDRESS1_PAY as Address1,ADDRESS2_PAY as Address2,CITY_PAY as City,STATE_PAY as State,CODE_ZIP_PAY as Code_Zip,COUNTRY_PAY as Country from V_CHECKS_LOG c left join v_Vendor_Pay_To v on c.Vend_no = v.Vendor where CK_DATE = '{0}' and Ck_Or_Void = 'C' and Ck_No not like 'A%' order by CK_NO",v.Local.sDateSelected,V.Local.sSQL)
+	
+	f.Intrinsic.Control.If(v.DataTable.T.Exists)
+		f.Data.DataTable.Close("T")
+	f.Intrinsic.Control.EndIf
+	f.Data.DataTable.CreateFromSQL("T","conx",v.Local.sSQL,True)
+	
+	f.Intrinsic.Control.For(v.Local.iCnt,0,v.DataTable.T.RowCount--,1)
+	
+		'Only process the non-exclude checks
+		f.Intrinsic.Control.If(v.Dictionary.ExcludeDict![v.DataTable.T(v.Local.iCnt).Ck_No!FieldValString],=,False)
+			f.Intrinsic.String.Build("Select check_num,date_check,check_desc,vendor,invoice,batch_code,batch_num,batch_line,Date_batch,Date_invoice,amt_invoice,amt_transaction,discount_invoice,amt_transaction - discount_invoice as Amt_Net,purchase_order,receiver from v_AP_Open_items where vendor = '{0}' and batch_code = '11'and check_num = '{1}'",v.DataTable.T(v.Local.iCnt).Vend_No!FieldValTrim,v.DataTable.T(v.Local.iCnt).Ck_No!FieldValString,v.Local.sSQL)
+			f.Intrinsic.Control.If(v.DataTable.Inv.Exists)
+				f.Data.DataTable.Close("Inv")
+			f.Intrinsic.Control.EndIf
+			f.Data.DataTable.CreateFromSQL("Inv","conx",v.Local.sSQL,True)
+			
+			'If there is no invoice in AP Open Items
+			f.Intrinsic.Control.If(v.DataTable.Inv.RowCount,=,0)
+			
+				'2/Payment header Record
+				f.Intrinsic.String.Format(v.DataTable.T(v.Local.iCnt).Amount!FieldValFloat,"#.00",v.Local.sAmountCheck)		
+				f.Intrinsic.String.LPad(v.DataTable.T(v.Local.iCnt).Ck_No!FieldValString,"0",9,v.Local.sCheckNum)
+				'Courrier Code
+				v.Local.sCourrierCode.Set(v.Dictionary.CourrierCodeDict![v.DataTable.T(v.Local.iCnt).CK_No!FieldValString])
+				f.Intrinsic.String.Build("{0}{1}PMTHDR,{2},{7},{3},{4},{5},{6},",v.Local.sExport,v.Ambient.NewLine,v.Local.sCourrierCode.Left8,v.Local.sDateSubmittedWithDash,v.Local.sAmountCheck,v.Screen.Form!txtBankAccount.Text.Trim,v.Local.sCheckNum,v.Screen.Form!txtCheckTemplate.Text.Trim,v.Local.sExport)		
+				
+				'3/Payee name Record
+				f.Intrinsic.String.Replace(v.DataTable.T(v.Local.iCnt).Payee!FieldValTrim,"'"," ",v.Local.sPayeeName)
+				f.Intrinsic.String.IsInString(v.Local.sPayeeName,",",True,v.Local.bContainsCommas)
+				f.Intrinsic.Control.If(v.Local.bContainsCommas)
+					v.Local.sPipeCharacter.Set("|")
+				f.Intrinsic.Control.Else
+					v.Local.sPipeCharacter.Set("")
+				f.Intrinsic.Control.EndIf
+				
+				f.Intrinsic.String.Build("{0}{1}PAYENM,{4}{2}{4},,{3},",v.Local.sExport,v.Ambient.NewLine,v.Local.sPayeeName,v.DataTable.T(v.Local.iCnt).Vend_No!FieldValTrim,v.Local.sPipeCharacter,v.Local.sExport)
+				
+				'4/Payee Address Record
+				'Address 1 pipe record only if there is a comma in the string
+				f.Intrinsic.String.IsInString(v.DataTable.T(v.Local.iCnt).Address1!FieldValTrim,",",True,v.Local.bContainsCommas)
+				f.Intrinsic.Control.If(v.Local.bContainsCommas)
+					v.Local.sPipeCharacter.Set("|")
+				f.Intrinsic.Control.Else
+					v.Local.sPipeCharacter.Set("")
+				f.Intrinsic.Control.EndIf
+				
+				'Address 2 pipe record 2 only if there is a comma in the string
+				f.Intrinsic.String.IsInString(v.DataTable.T(v.Local.iCnt).Address2!FieldValTrim,",",True,v.Local.bContainsCommas2)
+				f.Intrinsic.Control.If(v.Local.bContainsCommas2)
+					v.Local.sPipeCharacter2.Set("|")
+				f.Intrinsic.Control.Else
+					v.Local.sPipeCharacter2.Set("")
+				f.Intrinsic.Control.EndIf				
+				
+				f.Intrinsic.String.Build("{0}{1}PYEADD,{4}{2}{4},{5}{3}{5},",v.Local.sExport,v.Ambient.NewLine,v.DataTable.T(v.Local.iCnt).Address1!FieldValTrim,v.DataTable.T(v.Local.iCnt).Address2!FieldValTrim,v.Local.sPipeCharacter,v.Local.sPipeCharacter2,v.Local.sExport)
+				
+				'5/Additional Payee Address Record 
+				f.Intrinsic.String.Build("{0}{1}ADDPYE,,,,",v.Local.sExport,v.Ambient.NewLine,v.Local.sExport)
+				
+				'6/Payee Postal Record
+				f.Intrinsic.String.Left(v.DataTable.T(v.Local.iCnt).Code_Zip!FieldValTrim,10,v.Local.sZip)
+				f.Intrinsic.String.Build("{0}{1}PYEPOS,{2},{3},{4},{5},",v.Local.sExport,v.Ambient.NewLine,v.DataTable.T(v.Local.iCnt).City!FieldValTrim,v.DataTable.T(v.Local.iCnt).State!FieldValTrim,v.Local.sZip,"USA",v.Local.sExport)				
+				'Add line number
+				f.Intrinsic.Math.Add(v.Local.iLineNum,5,v.Local.iLineNum)
+				
+				'7/Remittance Detail
+				f.Intrinsic.String.Build("{0}{1}RMTDTL,{2},{3},{4},{5},{5},0.00,",v.Local.sExport,v.Ambient.NewLine,"","","",v.Local.sAmountCheck,v.Local.sExport)			
+				f.Intrinsic.Math.Add(v.Local.iLineNum,1,v.Local.iLineNum)
+				
+			'There are invoices in AP Open Items
+			f.Intrinsic.Control.Else
+				
+				'If Verfify Equal Amt Net is checked
+				f.Intrinsic.Control.If(v.Screen.Form!chkVerifyEqual.Value,=,1)
+					f.Data.DataTable.Compute("Inv","Sum([amt_net])","",v.Local.fTotal)
+					'Checking mismatch of check amount and total of invoice amount
+					f.Intrinsic.Control.If(v.Local.fTotal,<>,v.DataTable.T(v.Local.iCnt).Amount!FieldValFloat)
+						f.Intrinsic.Control.For(v.Local.iInvoice,0,v.DataTable.Inv.RowCount--,1)	
+							f.Intrinsic.String.Build("{0}{1}Invoice: {2} Amount: ${3}",v.Local.sMsg,v.Ambient.NewLine,v.DataTable.Inv(v.Local.iInvoice).Invoice!FieldValTrim,v.DataTable.Inv(v.Local.iInvoice).Amt_Invoice!FieldValFloat,v.Local.sMsg)
+						f.Intrinsic.Control.Next(v.Local.iInvoice)	
+						f.Intrinsic.String.Build("Check number {0} with Amount ${1} is not equal to Total of Invoice Amount{2}",v.DataTable.T(v.Local.iCnt).CK_No!FieldValString,v.DataTable.T(v.Local.iCnt).Amount!FieldValFloat,v.Local.sMsg,v.Local.sMsg)
+						f.Intrinsic.UI.Msgbox(v.Local.sMsg,"Error")
+						f.Intrinsic.Control.CallSub("Unload")	
+					f.Intrinsic.Control.EndIf					
+				f.Intrinsic.Control.EndIf	
+			
+				'2/Payment header Record
+				f.Intrinsic.String.Format(v.DataTable.T(v.Local.iCnt).Amount!FieldValFloat,"#.00",v.Local.sAmountCheck)		
+				f.Intrinsic.String.LPad(v.DataTable.T(v.Local.iCnt).Ck_No!FieldValString,"0",9,v.Local.sCheckNum)
+				'Courrier Code
+				v.Local.sCourrierCode.Set(v.Dictionary.CourrierCodeDict![v.DataTable.T(v.Local.iCnt).CK_No!FieldValString])
+				f.Intrinsic.String.Build("{0}{1}PMTHDR,{2},{7},{3},{4},{5},{6},",v.Local.sExport,v.Ambient.NewLine,v.Local.sCourrierCode.Left8,v.Local.sDateSubmittedWithDash,v.Local.sAmountCheck,v.Screen.Form!txtBankAccount.Text.Trim,v.Local.sCheckNum,v.Screen.Form!txtCheckTemplate.Text.Trim,v.Local.sExport)		
+				
+				'3/Payee name Record
+				f.Intrinsic.String.Replace(v.DataTable.T(v.Local.iCnt).Payee!FieldValTrim,"'"," ",v.Local.sPayeeName)
+				f.Intrinsic.String.IsInString(v.Local.sPayeeName,",",True,v.Local.bContainsCommas)
+				f.Intrinsic.Control.If(v.Local.bContainsCommas)
+					v.Local.sPipeCharacter.Set("|")
+				f.Intrinsic.Control.Else
+					v.Local.sPipeCharacter.Set("")
+				f.Intrinsic.Control.EndIf				
+				f.Intrinsic.String.Build("{0}{1}PAYENM,{4}{2}{4},,{3},",v.Local.sExport,v.Ambient.NewLine,v.Local.sPayeeName,v.DataTable.T(v.Local.iCnt).Vend_No!FieldValTrim,v.Local.sPipeCharacter,v.Local.sExport)
+				
+				'4/Payee Address Record
+				'Address 1 pipe record only if there is a comma in the string
+				f.Intrinsic.String.IsInString(v.DataTable.T(v.Local.iCnt).Address1!FieldValTrim,",",True,v.Local.bContainsCommas)
+				f.Intrinsic.Control.If(v.Local.bContainsCommas)
+					v.Local.sPipeCharacter.Set("|")
+				f.Intrinsic.Control.Else
+					v.Local.sPipeCharacter.Set("")
+				f.Intrinsic.Control.EndIf
+				
+				'Address 2 pipe record 2 only if there is a comma in the string
+				f.Intrinsic.String.IsInString(v.DataTable.T(v.Local.iCnt).Address2!FieldValTrim,",",True,v.Local.bContainsCommas2)
+				f.Intrinsic.Control.If(v.Local.bContainsCommas2)
+					v.Local.sPipeCharacter2.Set("|")
+				f.Intrinsic.Control.Else
+					v.Local.sPipeCharacter2.Set("")
+				f.Intrinsic.Control.EndIf				
+				
+				f.Intrinsic.String.Build("{0}{1}PYEADD,{4}{2}{4},{5}{3}{5},",v.Local.sExport,v.Ambient.NewLine,v.DataTable.T(v.Local.iCnt).Address1!FieldValTrim,v.DataTable.T(v.Local.iCnt).Address2!FieldValTrim,v.Local.sPipeCharacter,v.Local.sPipeCharacter2,v.Local.sExport)
+				
+				'5/Additional Payee Address Record 
+				f.Intrinsic.String.Build("{0}{1}ADDPYE,,,,",v.Local.sExport,v.Ambient.NewLine,v.Local.sExport)
+				
+				'6/Payee Postal Record
+				f.Intrinsic.String.Left(v.DataTable.T(v.Local.iCnt).Code_Zip!FieldValTrim,10,v.Local.sZip)
+				f.Intrinsic.String.Build("{0}{1}PYEPOS,{2},{3},{4},{5},",v.Local.sExport,v.Ambient.NewLine,v.DataTable.T(v.Local.iCnt).City!FieldValTrim,v.DataTable.T(v.Local.iCnt).State!FieldValTrim,v.Local.sZip,"USA",v.Local.sExport)
+				
+				'Add line number
+				f.Intrinsic.Math.Add(v.Local.iLineNum,5,v.Local.iLineNum)
+				
+				'7/Remittance Detail
+				f.Intrinsic.Control.For(v.Local.iInvoice,0,v.DataTable.Inv.RowCount--,1)	
+					'Format Date Invoice
+					f.Intrinsic.String.Format(v.DataTable.Inv(v.Local.iInvoice).Date_Invoice!FieldVal,"MMDDYYYY",v.Local.sInvoiceDate)
+					f.Intrinsic.String.Mid(v.Local.sInvoiceDate,3,2,v.Local.sHold)
+					v.Local.iMonth.Set(v.Local.sInvoiceDate.left2)
+					v.Local.iDay.Set(v.Local.sHold)
+					v.Local.iYear.Set(v.Local.sInvoiceDate.Right4)
+					f.Intrinsic.String.Build("{0}/{1}/{2}",v.Local.iMonth,v.Local.iDay,v.Local.iYear,v.Local.sDateInvoiceWithDash)				
+					f.Intrinsic.Math.Sub(v.DataTable.Inv(v.Local.iInvoice).Amt_Transaction!FieldValFloat,v.DataTable.Inv(v.Local.iInvoice).Amt_Net!FieldValFloat,v.Local.sAmtDiscount)
+					f.Intrinsic.String.Format(v.Local.sAmtDiscount,"#.00",v.Local.sAmtDiscount)
+					
+					f.Intrinsic.String.Format(v.DataTable.Inv(v.Local.iInvoice).Amt_Transaction!FieldValFloat,"#.00",v.Local.sAmountInvoice)
+					f.Intrinsic.String.Format(v.DataTable.Inv(v.Local.iInvoice).Amt_Net!FieldValFloat,"#.00",v.Local.sAmtNet)				
+					
+					'pipe record only if there is a comma in the string
+					f.Intrinsic.String.IsInString(v.DataTable.Inv(v.Local.iInvoice).Invoice!FieldValTrim,",",True,v.Local.bContainsCommas)
+					f.Intrinsic.Control.If(v.Local.bContainsCommas)
+						v.Local.sPipeCharacter.Set("|")
+					f.Intrinsic.Control.Else
+						v.Local.sPipeCharacter.Set("")
+					f.Intrinsic.Control.EndIf
+
+					'Invoice note
+					v.Local.sInvoiceNote.Set(v.Dictionary.InvNoteDict![v.DataTable.Inv(v.Local.iInvoice).Invoice!FieldValString])					
+					'pipe record 2 only if there is a comma in the string
+					f.Intrinsic.String.IsInString(v.Local.sInvoiceNote.Left30,",",True,v.Local.bContainsCommas2)
+					f.Intrinsic.Control.If(v.Local.bContainsCommas2)
+						v.Local.sPipeCharacter2.Set("|")
+					f.Intrinsic.Control.Else
+						v.Local.sPipeCharacter2.Set("")
+					f.Intrinsic.Control.EndIf						
+						
+					f.Intrinsic.String.Build("{0}{1}RMTDTL,{8}{2}{8},{9}{3}{9},{4},{5},{6},{7},",v.Local.sExport,v.Ambient.NewLine,v.DataTable.Inv(v.Local.iInvoice).Invoice!FieldValTrim,v.Local.sInvoiceNote.Left30,v.Local.sDateInvoiceWithDash,v.Local.sAmountInvoice,v.local.sAmtNet,v.Local.sAmtDiscount,v.Local.sPipeCharacter,v.Local.sPipeCharacter2,v.Local.sExport)
+			
+					f.Intrinsic.Math.Add(v.Local.iLineNum,1,v.Local.iLineNum)
+					
+				f.Intrinsic.Control.Next(v.Local.iInvoice)		
+			
+			f.Intrinsic.Control.EndIf
+			'======End if there is/not invoice in AP open Items			
+		
+		f.Intrinsic.Control.EndIf	
+
+	f.Intrinsic.Control.Next(v.Local.iCnt)	
+	
+	'8/Trailer
+	f.Intrinsic.Math.Add(v.Local.iLineNum,1,v.Local.iLineNum)
+
+	f.Intrinsic.String.Build("{0}{1}FILTRL,{2},",v.Local.sExport,v.Ambient.NewLine,v.Local.iLineNum,v.Local.sExport)		
+	
+	'Write file
+	f.Intrinsic.File.String2File(v.Local.sFile,v.Local.sExport)
+	
+	'Msg Done and unload
+	f.Intrinsic.UI.CloseWaitDialog	
+	f.Intrinsic.String.Build("Generated file {0}",v.Local.sFile,v.Local.sMsg)
+	f.Intrinsic.UI.Msgbox(v.Local.sMsg,"Done")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: GCG_6318_PosChk_Chase.g2u{0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	f.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.CheckPrintLayout.End
+
+Program.Sub.PositivePayLayout.Start
+f.Intrinsic.Control.Try	
+	V.Local.sError.Declare
+	v.Local.sSQL.Declare	
+	V.local.sExport.declare
+	v.Local.sFile.Declare
+	v.Local.sMsg.Declare
+	V.Local.sDateSelected.Declare
+	v.Local.sDateSubmitted.Declare
+	v.Local.sInvoiceDate.Declare
+	V.Local.sAmountCheck.Declare
+	v.Local.sAmountInvoice.Declare
+	v.Local.sAmtNet.Declare	
+	v.Local.sCheckNum.Declare
+	v.Local.sZip.Declare
+	v.Local.sCourrierCode.Declare
+	v.Local.sInvoiceNote.Declare
+	v.Local.iCnt.Declare
+	v.Local.iInvoice.Declare
+	v.Local.iLineNum.Declare
+	v.Local.fTotal.Declare	
+	v.Local.sHold.Declare
+	v.Local.sDateSubmittedWithDash.Declare
+	
+	v.Local.iMonth.Declare
+	v.Local.iDay.Declare
+	v.Local.iYear.Declare
+	v.Local.sDateInvoiceWithDash.Declare
+	v.Local.sPayeeName.Declare
+	v.Local.sPayeeAddress1.Declare
+	v.Local.sCity.Declare
+	v.Local.sTimeSubmitted.Declare	
+	
+	v.Local.bContainsCommas.Declare
+	v.Local.sPipeCharacter.Declare
+	v.Local.sPipeCharacter2.Declare	
+	v.Local.sAmtDiscount.Declare
+	v.Local.bContainsCommas2.Declare
+	v.Local.dDateSelect.Declare
+	v.Local.sLine.Declare
+	
+	'Generate Dictionary (CK_No, courrierCode)
+	f.Data.Dictionary.CreateFromDataTable("CourrierCodeDict","PreT","CK_No","CourrierCode")
+	f.Data.Dictionary.SetDefaultReturn("CourrierCodeDict","")
+	'Generate Dictionary (Invoice,Text)
+	f.Data.Dictionary.CreateFromSQL("InvNoteDict","conx","Select Distinct Invoice,Text from V_AP_INVC_NOTES")
+	f.Data.Dictionary.SetDefaultReturn("InvNoteDict","")
+	'Generate Dictionary (Invoice,Text)
+	f.Data.Dictionary.CreateFromDataTable("ExcludeDict","PreT","CK_No","Exclude")
+	f.Data.Dictionary.SetDefaultReturn("ExcludeDict",False)
+	
+	f.Intrinsic.UI.InvokeWaitDialog("Processing...")
+	gui.Form..Visible(false)
+	
+	'format date
+	F.Intrinsic.String.Format(V.Screen.Form!dpDate.Value,"YYYY-MM-DD",V.Local.sDateSelected)	
+	F.Intrinsic.String.Format(V.Screen.Form!dtpDateSubmit.Value,"MMDDYYYY",V.Local.sDateSubmitted)	
+	f.Intrinsic.String.Mid(v.Local.sDateSubmitted,3,2,v.Local.sHold)
+	v.Local.iMonth.Set(v.Local.sDateSubmitted.left2)
+	v.Local.iDay.Set(v.Local.sHold)
+	v.Local.iYear.Set(v.Local.sDateSubmitted.Right4)
+	f.Intrinsic.String.Build("{0}/{1}/{2}",v.Local.iMonth,v.Local.iDay,v.Local.iYear,v.Local.sDateSubmittedWithDash)
+	f.Intrinsic.String.Build("{0}\{1}_PosPay_{2}_Submit_{3}_{4}.csv",v.Screen.Form!txtExportFolder.Text.Trim,v.Caller.CompanyCode,v.Local.sDateSelected,v.Ambient.Date.FormatYYYYMMDD,v.Ambient.Now.FormatHhNnSs,v.Local.sFile)
+	
+	v.Local.sTimeSubmitted.Set(v.Ambient.Now.FormatHhNnSs)
+	
+	'1/File Header record
+	f.Intrinsic.String.Build("FILHDR,PWS,{0},{1},{2},","ECOFASTENSOLAR",V.Local.sDateSubmittedWithDash,v.Local.sTimeSubmitted.Left4,V.Local.sExport)
+	f.Intrinsic.Math.Add(v.Local.iLineNum,1,v.Local.iLineNum)
+		
+	'select data for correct date and account number
+	F.intrinsic.string.Build("select Ck_Date, Ck_No,Ck_Or_Void, Acct_No,v.Name_Vendor_pay as Payee, Amount, Vend_No,ADDRESS1_PAY as Address1,ADDRESS2_PAY as Address2,CITY_PAY as City,STATE_PAY as State,CODE_ZIP_PAY as Code_Zip,COUNTRY_PAY as Country from V_CHECKS_LOG c left join v_Vendor_Pay_To v on c.Vend_no = v.Vendor where CK_DATE = '{0}' and Ck_Or_Void = 'C' and Ck_No not like 'A%' order by CK_NO",v.Local.sDateSelected,V.Local.sSQL)
+	
+	f.Intrinsic.Control.If(v.DataTable.T.Exists)
+		f.Data.DataTable.Close("T")
+	f.Intrinsic.Control.EndIf
+	f.Data.DataTable.CreateFromSQL("T","conx",v.Local.sSQL,True)
+	
+	v.Local.dDateSelect.Set(V.Screen.Form!dpDate.Value)
+	v.Local.sDateSelected.Set(v.Local.sDateSelected.FormatYYYYMMDD)
+	f.Intrinsic.String.Mid(v.Local.sDateSelected,3,2,v.Local.sHold)
+	f.Intrinsic.String.Build("{0}{1}",v.Local.sDateSelected.right4,v.Local.sHold,v.Local.sDateSelected)
+	
+	f.Intrinsic.Control.For(v.Local.iCnt,0,v.DataTable.T.RowCount--,1)
+	
+		'Only process the non-exclude checks
+		f.Intrinsic.Control.If(v.Dictionary.ExcludeDict![v.DataTable.T(v.Local.iCnt).Ck_No!FieldValString],=,False)
+				v.Local.sPayeeName.Set(v.DataTable.T(v.Local.iCnt).Payee!FieldValString)
+				f.Intrinsic.String.Replace(v.Local.sPayeeName,","," ",v.Local.sPayeeName)
+				
+				'2/Payment header Record
+				f.Intrinsic.String.Format(v.DataTable.T(v.Local.iCnt).Amount!FieldValFloat,"#.00",v.Local.sAmountCheck)		
+				f.Intrinsic.String.LPad(v.DataTable.T(v.Local.iCnt).Ck_No!FieldValString,"0",9,v.Local.sCheckNum)
+				
+				f.Intrinsic.String.Build("{0},{1},{2},{3},{4},,{5}","I",v.Screen.Form!txtBankAccount.Text.Trim,v.Local.sCheckNum,v.Local.sDateSelected,v.Local.sAmountCheck,v.Local.sPayeeName.Trim,v.Local.sLine)
+				f.Intrinsic.Control.If(v.Local.iCnt,=,0)
+					v.Local.sExport.Set(v.Local.sLine)
+				f.Intrinsic.Control.Else
+					f.Intrinsic.String.Build("{0}{1}{2}",v.Local.sExport,v.Ambient.NewLine,v.Local.sLine,v.Local.sExport)
+				f.Intrinsic.Control.EndIf
+	
+		f.Intrinsic.Control.EndIf	
+
+	f.Intrinsic.Control.Next(v.Local.iCnt)	
+		
+	'Write file
+	f.Intrinsic.File.String2File(v.Local.sFile,v.Local.sExport)
+	
+	'Msg Done and unload
+	f.Intrinsic.UI.CloseWaitDialog	
+	f.Intrinsic.String.Build("Generated file {0}",v.Local.sFile,v.Local.sMsg)
+	f.Intrinsic.UI.Msgbox(v.Local.sMsg,"Done")
+	F.Intrinsic.Control.CallSub("Unload")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: GCG_6318_PosChk_Chase.g2u{0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	f.Intrinsic.Control.CallSub("Unload")
+F.Intrinsic.Control.EndTry
+Program.Sub.PositivePayLayout.End
+
+Program.Sub.Comments.Start
+Program.Sub.Comments.End
